@@ -1,0 +1,130 @@
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --cell-size: 25vh;
+  --mark-size: calc(var(--cell-size) * 0.9);
+  --robot-color: #5A5A5A;
+}
+
+.disabled {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none;   /* Safari */
+  -moz-user-select: none;      /* Old versions of Firefox */
+  -ms-user-select: none;       /* Internet Explorer/Edge */
+  user-select: none;           /* Chrome, Edge, Opera and Firefox */
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.board {
+  height: 90vh;
+  width: 100vw;
+  display: grid;
+  justify-content: center;
+  align-content: center;
+  justify-items: center;
+  align-items: center;
+  grid-template-columns: repeat(3, auto);
+}
+
+.cell {
+  border: 1px solid black;
+  height: var(--cell-size);
+  width: var(--cell-size);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.cell__x, .cell__o {
+  cursor: not-allowed;
+}
+
+.cell__x::before, .cell__x::after {
+  content: '';
+  position: absolute;
+  width: calc(var(--mark-size) * 0.15);
+  height: var(--mark-size);
+  background-color: black;
+}
+
+.cell__x::before {
+  transform: rotate(45deg);
+}
+
+.cell__x::after {
+  transform: rotate(-45deg);
+}
+
+.cell__o::before, .cell__o::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  width: var(--mark-size);
+  height: var(--mark-size);
+  background-color: black;
+}
+
+.cell__o::after {
+  width: calc(var(--mark-size) * 0.7);
+  height: calc(var(--mark-size) * 0.7);
+  background-color: white;
+}
+
+.cell:nth-child(-n + 3) {
+  border-top: none;
+}
+
+.cell:nth-child(3n + 1) {
+  border-left: none;
+}
+
+.cell:nth-child(3n) {
+  border-right: none;
+}
+
+.cell:nth-last-child(-n + 3) {
+  border-bottom: none;
+}
+
+.robot-container {
+  height: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding-top: 3em;
+  padding-bottom: 3em;
+}
+
+.fa-robot {
+  font-size: 5vh;
+  color: var(--robot-color);
+  padding-bottom: 0.25em;
+}
+
+.typewriter p {
+  color: gray;
+  width: 100%;
+  animation: typing 1s steps(20), blink .5s step-end infinite alternate;
+  white-space: nowrap;
+  overflow: hidden;
+  border-right: 3px solid;
+  font-family: monospace;
+  font-size: 1.5em;
+}
+
+@keyframes typing {
+  from { width: 0 }
+}
+
+@keyframes blink {
+  from, to { border-color: transparent }
+  50% { border-color: #8e8e93; }
+}
