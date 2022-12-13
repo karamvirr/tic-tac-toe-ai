@@ -72,10 +72,13 @@
    * @param {String} message  AI message to display on screen.
    */
   const setAIMessage = (message) => {
-    document.querySelector('.typewriter > p').innerText = message;
-      setTimeout(() => {
-        document.querySelector('.typewriter > p').innerText = '';
-      }, typewriterDelay);
+    let element = document.querySelector('.message-container > p');
+    element.innerText = message;
+    element.classList.add('typewriter');
+    setTimeout(() => {
+      element.innerText = '';
+      element.classList.remove('typewriter');
+    }, typewriterDelay);
   };
 
   /**
@@ -84,10 +87,14 @@
    */
   const computersTurn = () => {
     playersTurn = false;
+    let robotIcon = document.querySelector('.fa-robot');
+    robotIcon.style.transform = 'scale(1.25)';
 
     let board = getCurrentBoardState();
     let bestScore = -Infinity;
-    let bestMove = null;
+    // keeping track of all moves that are associated with the best score.
+    // adds a bit of variance to our gameplay while maintaining edge.
+    let bestMoves = [];
     for (let i = 0; i < 3; i++) {
       for (let j = 0; j < 3; j++) {
         if (board[i][j] === piece.Empty) {
@@ -95,26 +102,27 @@
           let score = minimax(board, 0, false);
           // recursive-backtracking.
           board[i][j] = piece.Empty;
-          // if computed score is equal to our best score, we'll 'flip a coin'
-          // and determine if the corresponding move will be used.
-          if ((score === bestScore && Math.random() >= 0.5)
-            || (score > bestScore)) {
+          if (score > bestScore) {
             bestScore = score;
-            bestMove = { i, j };
+            bestMoves = [{ i, j }];
+          } else if (score === bestScore) {
+            bestMoves.push({ i, j });
           }
         }
       }
     }
 
     setTimeout(() =>{
-      let chosenCell = cellElements[bestMove.i][bestMove.j];
+      const move = bestMoves[Math.floor(Math.random() * bestMoves.length)];
+      let chosenCell = cellElements[move.i][move.j];
       chosenCell.classList.add(getCSSRuleFromPiece(computerPiece));
       playersTurn = true;
+      robotIcon.style.transform = 'scale(1)';
       const winner = getWinner();
       if (winner !== null) {
         restartGame(winner);
       }
-    }, 350);
+    }, 500);
   };
 
   /**

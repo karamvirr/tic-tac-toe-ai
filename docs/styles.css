@@ -107,17 +107,21 @@
   font-size: 5vh;
   color: var(--robot-color);
   padding-bottom: 0.25em;
+  transition: transform 0.25s ease-in-out;
 }
 
-.typewriter p {
+.message-container p {
   color: gray;
   width: 100%;
-  animation: typing 1s steps(20), blink .5s step-end infinite alternate;
   white-space: nowrap;
   overflow: hidden;
   border-right: 3px solid;
   font-family: monospace;
   font-size: 1.5em;
+}
+
+.typewriter {
+  animation: typing 1s steps(20), blink .5s step-end infinite alternate;
 }
 
 @keyframes typing {
