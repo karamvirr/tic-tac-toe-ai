@@ -5,9 +5,9 @@
     Empty: '-'
   };
   let cellElements = [];
-  // AI decision delay in milliseconds.
-  const delay = 3500;
-  let gameStarted = false;
+  // time in milliseconds
+  const typewriterDelay = 2000;
+  let gameInProgress = false;
   // either 'X' or 'O' when set, starting player is always 'X'.
   let playerPiece = null;
   let computerPiece = null;
@@ -20,7 +20,7 @@
       cellElements.push(queryResult.splice(0, 3));
     }
     cellElements.flat().forEach((element) => {
-      element.addEventListener('click', handleCellClick, { once: true });
+      element.addEventListener('click', handleCellClick);
     });
     startGame();
   };
@@ -29,7 +29,7 @@
    * starts game by determining the starting player.
    */
   const startGame = () => {
-    gameStarted = true;
+    gameInProgress = true;
     if (Math.random() >= 0.5) {
       setAIMessage('I\'ll go first.');
       playersTurn = false;
@@ -42,20 +42,21 @@
       playerPiece = piece.X;
       computerPiece = piece.O;
     }
-    setTimeout(() => {
-      setAIMessage('');
-    }, delay);
   };
 
   /**
    * @param {Event} event  object associated to a grid cell click event.
    */
   const handleCellClick = (event) => {
-    console.log(event.target.classList.length);
-    if (gameStarted && playersTurn
+    if (gameInProgress && playersTurn
       && (event.target.classList.length === 1)) {
       event.target.classList.add(getCSSRuleFromPiece(playerPiece));
-      computersTurn();
+      const winner = getWinner();
+      if (winner !== null) {
+        restartGame(winner);
+      } else {
+        computersTurn();
+      }
     }
   };
 
@@ -72,6 +73,9 @@
    */
   const setAIMessage = (message) => {
     document.querySelector('.typewriter > p').innerText = message;
+      setTimeout(() => {
+        document.querySelector('.typewriter > p').innerText = '';
+      }, typewriterDelay);
   };
 
   /**
@@ -102,10 +106,41 @@
       }
     }
 
-    let chosenCell = cellElements[bestMove.i][bestMove.j];
-    chosenCell.classList.add(getCSSRuleFromPiece(computerPiece));
-    playersTurn = true;
+    setTimeout(() =>{
+      let chosenCell = cellElements[bestMove.i][bestMove.j];
+      chosenCell.classList.add(getCSSRuleFromPiece(computerPiece));
+      playersTurn = true;
+      const winner = getWinner();
+      if (winner !== null) {
+        restartGame(winner);
+      }
+    }, 350);
   };
+
+  /**
+   * declares the winner on the screen and restarts the game.
+   * the game is restarted by clearing the board of game pieces, and
+   * assigning a new starting player.
+   * assumption: winner !== null
+   */
+  const restartGame = (winner) => {
+    gameInProgress = false;
+    if (winner === computerPiece) {
+      setAIMessage('Heh, I won!');
+    } else if (winner === 'tie') {
+      setAIMessage('A tie!');
+    } else {
+      // we should never enter this case.
+      setAIMessage('W-wow, that had to be rigged!');
+    }
+    setTimeout(() => {
+      cellElements.flat().forEach((element) => {
+        element.classList.remove(getCSSRuleFromPiece(playerPiece));
+        element.classList.remove(getCSSRuleFromPiece(computerPiece));
+      });
+      startGame();
+    }, typewriterDelay);
+  }
 
   /**
    * example output:
@@ -140,7 +175,7 @@
    * @param {Integer} depth       depth of the given board from its root.
    * @param {Boolean} maximizing  true if calculating maximum score,
    *                              false otherwise.
-   * @returns {Integer}
+   * @returns {Integer}           heuristic value for the given board.
    */
   const minimax = (board, depth, maximizing) => {
     const eval = evaluateBoard(board, depth);
@@ -185,12 +220,12 @@
    *                            otherwise returns null.
    */
   const evaluateBoard = (board, depth = 0) => {
-    const state = determineState(board);
-    if (state === computerPiece) {
+    const winner = getWinner(board);
+    if (winner === computerPiece) {
       return 10 - depth;
-    } else if (state === playerPiece) {
+    } else if (winner === playerPiece) {
       return -10 - depth;
-    } else if (state === 'tie') {
+    } else if (winner === 'tie') {
       return 0;
     }
     return null;
@@ -198,10 +233,11 @@
 
   /**
    * @param {[[String]]} board  board representation as a 2D array.
-   * @returns {String}          winning game piece character if it is a winning
-   *                            state, 'tie' if the game is a tie or null.
+   * @returns {String}          winning game piece as a string if there is a
+   *                            winner, 'tie' if the game is a tie, otherwise
+   *                            null.
    */
-  const determineState = (board) => {
+  const getWinner = (board = getCurrentBoardState()) => {
     // horizontal
     for (let i = 0; i < 3; i++) {
       if ((board[i][0] === board[i][1] && board[i][1] === board[i][2])
